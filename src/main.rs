@@ -93,7 +93,7 @@ fn main() {
     //& If its an escape character => Go to the next valid character. If that dont exist go to next
     //& line If its neither and just normal text => //TODO
 
-    let mut html_vec : Vec<String> = vec![];
+    let mut html_vec: Vec<String> = vec![];
 
     for line in md_vec {
         //TODO Handle the match case better.
@@ -104,8 +104,8 @@ fn main() {
 
         let line_wo_key = line.chars().skip(1).collect::<String>();
 
-        //TODO If the value matches the md_key perform a function that takes the content for the line and adds it to the html
-        // match key.to_string() {
+        //TODO If the value matches the md_key perform a function that takes the content for the
+        // line and adds it to the html match key.to_string() {
         //     value if value == md_key.h1 => h1_count += 1,
         //     value if value == md_key.h2 => h2_count += 1,
         //     value if value == md_key.h3 => h3_count += 1,
@@ -116,7 +116,8 @@ fn main() {
         //     _ => println!(""),
         // }
 
-
+        //TODO Needs rework as it most likely is redundant and can be reduced. The match case is
+        //TODO being handled in the 'convert_md_line_to_html_line' function anyway
         match key.to_string() {
             value if value == md_key.h1 => html_vec.push(convert_md_line_to_html_line(value)),
             value if value == md_key.h2 => html_vec.push(convert_md_line_to_html_line(value)),
@@ -128,17 +129,17 @@ fn main() {
             _ => println!(""),
         }
 
-
         println!("Line: {}", line);
         println!("Key : {}", key);
         println!("Line wo Key : {}", line_wo_key);
     }
 
-    let output = format!(
-        "H1: {}\nH2: {}\nH3: {}\nH4: {}\nH5: {}\nH6: {}\nBullet: {}",
-        h1_count, h2_count, h3_count, h4_count, h5_count, h6_count, bullet_count
-    );
-    println!("{}", output);
+    //~ Prints the count of the keys
+    // let output = format!(
+    //     "H1: {}\nH2: {}\nH3: {}\nH4: {}\nH5: {}\nH6: {}\nBullet: {}",
+    //     h1_count, h2_count, h3_count, h4_count, h5_count, h6_count, bullet_count
+    // );
+    // println!("{}", output);
 
     println!("HTML Vec : {:?}", html_vec)
 }
@@ -167,8 +168,7 @@ fn read_md(filepath: &str) -> String {
     file_string
 }
 
-fn convert_md_line_to_html_line(md_key_value : String, ) -> String {
-
+fn convert_md_line_to_html_line(md_key_value: String) -> String {
     let md_key = Mdkey {
         h1: "#".to_string(),
         h2: "##".to_string(),
@@ -200,7 +200,6 @@ fn convert_md_line_to_html_line(md_key_value : String, ) -> String {
         _ => format!("Key Not found"),
     }
 }
-
 
 fn create_html(filepath: &str, filename: &str, contents: String) {
     let file = format!("{}/{}.html", filepath, filename);
