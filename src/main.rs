@@ -1,7 +1,7 @@
 use std::{
-    char,
     fs::*,
     io::prelude::*,
+    path::Path,
 };
 
 struct Mdkey {
@@ -24,67 +24,9 @@ struct HTMLkey {
 }
 
 fn main() {
-    let md_key = Mdkey {
-        h1: "#".to_string(),
-        h2: "##".to_string(),
-        h3: "###".to_string(),
-        h4: "####".to_string(),
-        h5: "#####".to_string(),
-        h6: "######".to_string(),
-        bullet: "-".to_string(),
-    };
-
-    //? This requires the compiler to go the first closing arrow '>' and then insert after that.
-    //? Another option could be the example below the code
-    let html_key = HTMLkey {
-        h1: "<h1></h1>".to_string(),
-        h2: "<h2></h2>".to_string(),
-        h3: "<h3></h3>".to_string(),
-        h4: "<h4></h4>".to_string(),
-        h5: "<h5></h5>".to_string(),
-        h6: "<h6></h6>".to_string(),
-        bullet: "<ul></ul>".to_string(),
-    };
-    //? EXAMPLE
-    //? struct HTMLkey2{
-    //?     h1_open: String,
-    //?     h1_closed: String,
-    //?     h2_open: String,
-    //?     h2_closed: String,
-    //?     h3_open: String,
-    //?     h3_closed: String,
-    //?     h4_open: String,
-    //?     h4_closed: String,
-    //?     h5_open: String,
-    //?     h5_closed: String,
-    //?     h6_open: String,
-    //?     h6_closed: String,
-    //? }
-    //? let html_key = HTMLkey2 {
-    //?     h1_open: "<h1>".to_string(),
-    //?     h1_closed: "</h1>".to_string(),
-    //?     h2_open: "<h2>".to_string(),
-    //?     h2_closed: "</h2>".to_string(),
-    //?     h3_open: "<h3>".to_string(),
-    //?     h3_closed: "</h3>".to_string(),
-    //?     h4_open: "<h4>".to_string(),
-    //?     h4_closed: "</h4>".to_string(),
-    //?     h5_open: "<h5>".to_string(),
-    //?     h5_closed: "</h5>".to_string(),
-    //?     h6_open: "<h6>".to_string(),
-    //?     h6_closed: "</h6>".to_string(),
-    //? };
-
-    let mut h1_count = 0;
-    let mut h2_count = 0;
-    let mut h3_count = 0;
-    let mut h4_count = 0;
-    let mut h5_count = 0;
-    let mut h6_count = 0;
-    let mut bullet_count = 0;
 
     let md_binding = read_md("test.md");
-
+    println!("MD Binding:  {:?}", md_binding);
     //~ Split by line. Allows us to handle each key for each line
     let md_vec: Vec<&str> = md_binding.trim().split("\n").collect();
 
@@ -102,37 +44,46 @@ fn main() {
             None => 'c',
         };
 
-        let line_wo_key = line.chars().skip(1).collect::<String>();
+        //~ Used in the iterator below to remove the key based on the length of the key
+        //~ If the line is : `# Hello World` it gets the length of '#' (which is 1) and removes that many characters from the start
+        //~ If the line is : `## Hello World` it gets the length of '##' (which is 2)
+        let md_key_length = key.to_string().len();
 
-        //TODO Needs rework as it most likely is redundant and can be reduced. The match case is
-        //TODO being handled in the 'convert_md_key_to_html_key' function anyway
-        // match key.to_string() {
-        //     value if value == md_key.h1 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.h2 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.h3 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.h4 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.h5 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.h6 => html_key_vec.push(convert_md_key_to_html_key(value)),
-        //     value if value == md_key.bullet =>
-        // html_key_vec.push(convert_md_key_to_html_key(value)),     _ => println!(""),
+        //~ Removes the key from the line and returns the rest
+        let line_wo_key = line
+            .chars()
+            .skip(md_key_length)
+            .collect::<String>();
+        
+        //~ Takes the markdown key and returns the corresponding html key
+        let html_key = convert_md_key_to_html_key(key.to_string());
+
+        //~ Inserts the line_wo_key after the first '>' in the html_key
+        //~ Works because the `find()` function locates the FIRST instance of the character stopping the line_wo_key being added to any other instance of the '>'
+        let mut html = String::new();
+        if let Some(position) = html_key.find('>') {
+            let (opening_tag, closing_tag) = html_key.split_at(position + 1);
+            html = format!("{}{}{}", opening_tag, line_wo_key, closing_tag);
+
+        } //TODO if it cant find the '>' something should probably happen
+        // else {
+        //     println!("No '>' character found in the string.");
         // }
 
-        html_key_vec.push(convert_md_key_to_html_key(key.to_string()));
+        html_key_vec.push(html);
 
-        println!("Line: {}", line);
-        println!("Key : {}", key);
+        // println!("Line: {}", line);
+        // println!("Key : {}", key);
         println!("Line wo Key : {}", line_wo_key);
-        println!("HTML VEC : {:?} \n", html_key_vec);
     }
 
-    //~ Prints the count of the keys
-    // let output = format!(
-    //     "H1: {}\nH2: {}\nH3: {}\nH4: {}\nH5: {}\nH6: {}\nBullet: {}",
-    //     h1_count, h2_count, h3_count, h4_count, h5_count, h6_count, bullet_count
-    // );
-    // println!("{}", output);
+    let mut html = String::new();
+    for i in html_key_vec {
+        html += &i;
+    }
 
-    println!("HTML Vec : {:?}", html_key_vec)
+    // println!("HTML: {:?}", html);
+    create_html("src/", "index", html);
 }
 
 fn read_md(filepath: &str) -> String {
@@ -147,6 +98,7 @@ fn read_md(filepath: &str) -> String {
     };
     //~ Put into String buffer
     //TODO Handle the match properly
+    //TODO Remove return characters '\r'
     let mut file_string = String::new();
     match file.read_to_string(&mut file_string) {
         Ok(file) => file,
@@ -156,6 +108,9 @@ fn read_md(filepath: &str) -> String {
         }
     };
 
+    //~ Remove the return characters '\r'
+    let file_string = file_string.replace("\r", "to");
+    
     file_string
 }
 
@@ -196,13 +151,33 @@ fn convert_md_key_to_html_key(md_key_value: String) -> String {
 }
 
 fn create_html(filepath: &str, filename: &str, contents: String) {
-    let file = format!("{}/{}.html", filepath, filename);
-    let html = match File::create(file) {
-        Ok(html) => html,
-        Err(error) => {
-            eprintln!("Error Creating File: {}", error);
-            panic!()
-        }
-    };
-    //TODO Write to file
+    let html_front_template = "
+        <!DOCTYPE html>
+    <html lang=\"en\">
+    <head>
+        <meta charset=\"UTF-8\">
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+        <title>Document</title>
+    </head>
+    <body>";
+
+    let html_back_template = "
+    </body>
+    </html>";
+
+    let html = html_front_template.to_owned() + &contents + html_back_template;
+    // println!("HTML : {:?}", html);
+
+    // Ensure the directory exists
+    let path = Path::new(filepath);
+    if !path.exists() {
+        std::fs::create_dir_all(path).expect("Failed to create directories");
+    }
+
+    let file_path = format!("{}/{}.html", filepath, filename);
+    let mut file = File::create(&file_path).expect("Failed to create file");
+
+    file.write_all(html.as_bytes())
+        .expect("Failed to write to file");
+    println!("HTML file created at: {}", file_path);
 }
