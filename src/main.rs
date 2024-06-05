@@ -93,7 +93,7 @@ fn main() {
     //& If its an escape character => Go to the next valid character. If that dont exist go to next
     //& line If its neither and just normal text => //TODO
 
-    let mut html_vec: Vec<String> = vec![];
+    let mut html_key_vec: Vec<String> = vec![];
 
     for line in md_vec {
         //TODO Handle the match case better.
@@ -104,34 +104,25 @@ fn main() {
 
         let line_wo_key = line.chars().skip(1).collect::<String>();
 
-        //TODO If the value matches the md_key perform a function that takes the content for the
-        // line and adds it to the html match key.to_string() {
-        //     value if value == md_key.h1 => h1_count += 1,
-        //     value if value == md_key.h2 => h2_count += 1,
-        //     value if value == md_key.h3 => h3_count += 1,
-        //     value if value == md_key.h4 => h4_count += 1,
-        //     value if value == md_key.h5 => h5_count += 1,
-        //     value if value == md_key.h6 => h6_count += 1,
-        //     value if value == md_key.bullet => bullet_count += 1,
-        //     _ => println!(""),
+        //TODO Needs rework as it most likely is redundant and can be reduced. The match case is
+        //TODO being handled in the 'convert_md_key_to_html_key' function anyway
+        // match key.to_string() {
+        //     value if value == md_key.h1 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.h2 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.h3 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.h4 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.h5 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.h6 => html_key_vec.push(convert_md_key_to_html_key(value)),
+        //     value if value == md_key.bullet =>
+        // html_key_vec.push(convert_md_key_to_html_key(value)),     _ => println!(""),
         // }
 
-        //TODO Needs rework as it most likely is redundant and can be reduced. The match case is
-        //TODO being handled in the 'convert_md_line_to_html_line' function anyway
-        match key.to_string() {
-            value if value == md_key.h1 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.h2 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.h3 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.h4 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.h5 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.h6 => html_vec.push(convert_md_line_to_html_line(value)),
-            value if value == md_key.bullet => html_vec.push(convert_md_line_to_html_line(value)),
-            _ => println!(""),
-        }
+        html_key_vec.push(convert_md_key_to_html_key(key.to_string()));
 
         println!("Line: {}", line);
         println!("Key : {}", key);
         println!("Line wo Key : {}", line_wo_key);
+        println!("HTML VEC : {:?} \n", html_key_vec);
     }
 
     //~ Prints the count of the keys
@@ -141,7 +132,7 @@ fn main() {
     // );
     // println!("{}", output);
 
-    println!("HTML Vec : {:?}", html_vec)
+    println!("HTML Vec : {:?}", html_key_vec)
 }
 
 fn read_md(filepath: &str) -> String {
@@ -168,7 +159,7 @@ fn read_md(filepath: &str) -> String {
     file_string
 }
 
-fn convert_md_line_to_html_line(md_key_value: String) -> String {
+fn convert_md_key_to_html_key(md_key_value: String) -> String {
     let md_key = Mdkey {
         h1: "#".to_string(),
         h2: "##".to_string(),
@@ -197,7 +188,10 @@ fn convert_md_line_to_html_line(md_key_value: String) -> String {
         value if value == md_key.h5 => return html_key.h5,
         value if value == md_key.h6 => return html_key.h6,
         value if value == md_key.bullet => return html_key.bullet,
-        _ => format!("Key Not found"),
+        _ => format!("Key Not found"), /* TODO this should just measure/test the text itself and
+                                        * no other key so we
+                                        * dont need to to add it to the html_key_vec so it should
+                                        * be rendered in the <p> tag */
     }
 }
 
