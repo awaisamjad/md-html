@@ -7,3 +7,6 @@
 - \#####
 - \######
 - \-
+
+# Example 
+asciinema

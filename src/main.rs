@@ -1,3 +1,5 @@
+pub mod cli;
+
 use std::{
     fs::*,
     io::prelude::*,
@@ -24,9 +26,12 @@ struct HTMLkey {
 }
 
 fn main() {
+    let (md_file_cli, html_file_cli) = cli::cli();
 
-    let md_binding = read_md("test.md");
-    println!("MD Binding:  {:?}", md_binding);
+    //~ Allows user to not have to include file extension through CLI
+    let md_file_cli = format!("{}.md", md_file_cli);
+    let md_binding = read_md(&md_file_cli);
+
     //~ Split by line. Allows us to handle each key for each line
     let md_vec: Vec<&str> = md_binding.trim().split("\n").collect();
 
@@ -74,7 +79,7 @@ fn main() {
 
         // println!("Line: {}", line);
         // println!("Key : {}", key);
-        println!("Line wo Key : {}", line_wo_key);
+        // println!("Line wo Key : {}", line_wo_key);
     }
 
     let mut html = String::new();
@@ -82,8 +87,8 @@ fn main() {
         html += &i;
     }
 
-    // println!("HTML: {:?}", html);
-    create_html("src/", "index", html);
+    create_html(&html_file_cli, html);
+    
 }
 
 fn read_md(filepath: &str) -> String {
@@ -150,7 +155,7 @@ fn convert_md_key_to_html_key(md_key_value: String) -> String {
     }
 }
 
-fn create_html(filepath: &str, filename: &str, contents: String) {
+fn create_html(filepath: &str, contents: String) {
     let html_front_template = "
         <!DOCTYPE html>
     <html lang=\"en\">
@@ -174,7 +179,7 @@ fn create_html(filepath: &str, filename: &str, contents: String) {
         std::fs::create_dir_all(path).expect("Failed to create directories");
     }
 
-    let file_path = format!("{}/{}.html", filepath, filename);
+    let file_path = format!("{}.html", filepath);
     let mut file = File::create(&file_path).expect("Failed to create file");
 
     file.write_all(html.as_bytes())
